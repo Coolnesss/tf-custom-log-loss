@@ -5,7 +5,7 @@
 using namespace tensorflow;
 
 REGISTER_OP("LogLoss")
-    .Input("real: int32")
+    .Input("real: float32")
     .Input("pred: float32")
     .Output("loss: float32");
 
@@ -22,7 +22,7 @@ class LogLossOp : public OpKernel {
 
     // Grab the y tensor
     const Tensor& y_tensor = context->input(0);
-    auto y = y_tensor.flat<int32>();
+    auto y = y_tensor.flat<float>();
 
     // Create an output tensor
     // Allocates a scalar decimal value
