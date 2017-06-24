@@ -5,8 +5,8 @@
 using namespace tensorflow;
 
 REGISTER_OP("LogLoss")
+    .Input("real: int32")
     .Input("pred: float32")
-    .Input("real: float32")
     .Output("loss: float32");
 
 
@@ -17,18 +17,38 @@ class LogLossOp : public OpKernel {
   void Compute(OpKernelContext* context) override {
     
     // Grab the prediction tensor
-    const Tensor& pred_tensor = context->input(0);
+    const Tensor& pred_tensor = context->input(1);
+    auto pred = pred_tensor.flat<float>();
 
     // Grab the y tensor
-    const Tensor& y_tensor = context->input(1);
-
-    //std::cout << "SHAPE";// << pred_tensor.shape() << y_tensor.shape() << std::endl;
-    //auto input = input_tensor.flat<float64>();
+    const Tensor& y_tensor = context->input(0);
+    auto y = y_tensor.flat<int32>();
 
     // Create an output tensor
+    // Allocates a new zero tensor, same shape as pred_tensor
+    
+    /*
     Tensor* loss_tensor = NULL;
     OP_REQUIRES_OK(context, context->allocate_output(0, pred_tensor.shape(),
                                                     &loss_tensor));
+
+    auto loss = loss_tensor->flat<float>();
+        //auto output = output_tensor->template scalar<string>();
+    */
+
+    Tensor* output_tensor = nullptr;
+    OP_REQUIRES_OK(context,
+                   context->allocate_output(0, TensorShape(), &output_tensor));
+    auto loss = output_tensor->template scalar<float>();
+                                  
+    int N = pred.size();
+
+    // Avoid log(0)
+    float epsilon = 1e-7;
+
+    for (int i = 0; i < N; i++ ) {
+      loss() = loss() + -((y(i) * log(pred(i) + epsilon)) + (1 - y(i)) * log(1 - pred(i) + epsilon));
+    }
     //auto output_flat = output_tensor->flat<int32>();
 
     // Set all but the first element of the output tensor to 0.
