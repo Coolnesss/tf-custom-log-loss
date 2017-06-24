@@ -25,16 +25,7 @@ class LogLossOp : public OpKernel {
     auto y = y_tensor.flat<int32>();
 
     // Create an output tensor
-    // Allocates a new zero tensor, same shape as pred_tensor
-    
-    /*
-    Tensor* loss_tensor = NULL;
-    OP_REQUIRES_OK(context, context->allocate_output(0, pred_tensor.shape(),
-                                                    &loss_tensor));
-
-    auto loss = loss_tensor->flat<float>();
-        //auto output = output_tensor->template scalar<string>();
-    */
+    // Allocates a scalar decimal value
 
     Tensor* output_tensor = nullptr;
     OP_REQUIRES_OK(context,
@@ -49,16 +40,6 @@ class LogLossOp : public OpKernel {
     for (int i = 0; i < N; i++ ) {
       loss() = loss() + -((y(i) * log(pred(i) + epsilon)) + (1 - y(i)) * log(1 - pred(i) + epsilon));
     }
-    //auto output_flat = output_tensor->flat<int32>();
-
-    // Set all but the first element of the output tensor to 0.
-    //const int N = input.size();
-    //for (int i = 1; i < N; i++) {
-    //  output_flat(i) = 0;
-    //}
-
-    // Preserve the first input value if possible.
-    //if (N > 0) output_flat(0) = input(0);
   }
 };
 
